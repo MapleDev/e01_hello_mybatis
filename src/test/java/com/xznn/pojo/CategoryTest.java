@@ -5,12 +5,15 @@ import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 
 public class CategoryTest {
@@ -30,6 +33,12 @@ public class CategoryTest {
         session = sqlSessionFactory.openSession();
     }
 
+    @After
+    public void after() {
+        session.commit();
+        session.close();
+    }
+
     @Test
     public void testAdd() {
         Category category = new Category();
@@ -37,6 +46,13 @@ public class CategoryTest {
         category.setName("newCategory");
         int addRst = session.insert("addCategory", category);
         System.out.println("addRst = " + addRst);
+    }
+
+    @Test
+    public void testDeleteCategory() {
+        int id = 14;
+        int deleteRst = session.insert("deleteCategory", id);
+        System.out.println("deleteRst = " + deleteRst);
     }
 
     @Test
@@ -77,4 +93,28 @@ public class CategoryTest {
         System.out.println("newCategory  = " + newCategory);
 
     }
+
+    @Test
+    public void testListCategoryByIdAndName() {
+        Map<String, Object> params = new HashMap<>();
+        params.put("id", 15);
+        params.put("name", "cat");
+        List<Category> cs = session.selectList("listCategoryByIdAndName", params);
+        for (Category c : cs) {
+            System.out.println("listCategoryByName = " + c);
+        }
+    }
+
+    @Test
+    public void testListCategoryJoin() {
+        List<Category> cs = session.selectList("listCategoryJoin");
+        for (Category c : cs) {
+            System.out.println(c);
+            List<Product> ps = c.getProducts();
+            for (Product p : ps) {
+                System.out.println("\t" + p);
+            }
+        }
+    }
+
 }

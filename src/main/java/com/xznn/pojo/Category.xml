@@ -9,22 +9,66 @@
     </insert>
 
     <insert id="deleteCategory" parameterType="Category">
-        delete from category_ where id = #{id}
+        delete from category_
+        where id = #{id}
     </insert>
 
     <insert id="updateCategory" parameterType="Category">
-        update category_ set name=#{name} where id = #{id}
+        update category_
+        set name = #{name}
+        where id = #{id}
     </insert>
 
     <select id="listCategory" resultType="Category">
-            select * from category_
+        select *
+        from category_
     </select>
 
     <select id="getCategoryById" resultType="Category">
-            select * from category_ where id = #{id}
+        select *
+        from category_
+        where id = #{id}
     </select>
 
+    <!--模糊查询-->
     <select id="listCategoryByName" resultType="Category">
-            select * from category_ where name like concat('%', #{0}, '%')
+        select *
+        from category_
+        where name like concat('%', #{0}, '%')
     </select>
+
+    <!--多条件查询-->
+    <select id="listCategoryByIdAndName" parameterType="map" resultType="Category">
+        select *
+        from category_
+        where id > #{id} and name like concat('%', #{name}, '%')
+    </select>
+
+
+    <resultMap type="Category" id="categoryBean">
+        <id column="cid" property="id"/>
+        <result column="cname" property="name"/>
+
+        <!-- 一对多的关系 -->
+        <!-- property: 指的是集合属性的值, ofType：指的是集合中元素的类型 -->
+        <collection property="products" ofType="Product">
+            <id column="pid" property="id"/>
+            <result column="pname" property="name"/>
+            <result column="price" property="price"/>
+        </collection>
+    </resultMap>
+
+    <!-- 关联查询分类和产品表 -->
+    <select id="listCategoryJoin" resultMap="categoryBean">
+        select
+            c.*,
+            p.*,
+            c.id   'cid',
+            p.id   'pid',
+            c.name 'cname',
+            p.name 'pname'
+        from category_ c left join product_ p on c.id = p.cid
+    </select>
+
+
 </mapper>
