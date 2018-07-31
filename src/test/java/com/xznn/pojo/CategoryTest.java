@@ -5,6 +5,7 @@ import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+import org.apache.log4j.BasicConfigurator;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,10 +19,11 @@ import java.util.Map;
 
 public class CategoryTest {
 
+    private SqlSessionFactory sqlSessionFactory;
     private SqlSession session;
 
     @Before
-    public void init() throws IOException {
+    public void init() {
         String resource = "mybatis-config.xml";
         InputStream inputStream = null;
         try {
@@ -29,8 +31,10 @@ public class CategoryTest {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+        sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
         session = sqlSessionFactory.openSession();
+
+        BasicConfigurator.configure();
     }
 
     @After
@@ -58,6 +62,32 @@ public class CategoryTest {
     @Test
     public void testListCategory() {
         List<Category> cs = session.selectList("listCategory");
+        for (Category c : cs) {
+            System.out.println(c.getName());
+        }
+    }
+
+    // 分页
+    @Test
+    public void testListCategoryPaging() {
+        query();
+        query();
+    }
+
+    @Test
+    public void testCache() {
+        query();
+        session.commit();
+        session.close();
+        session = sqlSessionFactory.openSession();
+        query();
+    }
+
+    private void query() {
+        Map<String, Object> params = new HashMap<>();
+        params.put("start", 0);
+        params.put("count", 5);
+        List<Category> cs = session.selectList("listCategory", params);
         for (Category c : cs) {
             System.out.println(c.getName());
         }
